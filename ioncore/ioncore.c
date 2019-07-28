@@ -50,6 +50,7 @@
 #include "gr.h"
 #include "xic.h"
 #include "netwm.h"
+#include "qubes.h"
 #include "focus.h"
 #include "frame.h"
 #include "saveload.h"
@@ -540,6 +541,7 @@ static bool ioncore_init_x(const char *display, int stflags)
     ioncore_init_cursors();
 
     netwm_init();
+    qubes_init();
 
     ioncore_init_session(XDisplayName(display));
 

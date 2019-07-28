@@ -36,6 +36,7 @@
 #include "rootwin.h"
 #include "activity.h"
 #include "netwm.h"
+#include "qubes.h"
 #include "xwindow.h"
 #include "bindmaps.h"
 #include "return.h"
@@ -229,6 +230,8 @@ void clientwin_get_set_name(WClientWin *cwin)
 {
     char **list=NULL;
     int n=0;
+    char **vmnames = NULL;
+    char *vmname = NULL;
 
     if(ioncore_g.use_mb)
         list=netwm_get_name(cwin);
@@ -239,15 +242,29 @@ void clientwin_get_set_name(WClientWin *cwin)
         cwin->flags|=CLIENTWIN_USE_NET_WM_NAME;
     }
 
-    if(list==NULL){
+    vmnames = qubes_vmname(cwin);
+    if (vmnames==NULL || *vmnames==NULL)
+        vmname = "dom0";
+    else
+        vmname = *vmnames;
+
+    if(list==NULL || *list==NULL){
         /* Special condition kludge: property exists, but couldn't
          * be converted to a string list.
          */
         clientwin_set_name(cwin, (n==-1 ? "???" : NULL));
     }else{
-        clientwin_set_name(cwin, *list);
-        XFreeStringList(list);
+        char *app_title = *list;
+        char title[strlen(vmname) + strlen(app_title) + 4];
+        snprintf(title, sizeof(title), "[%s] %s", vmname, app_title);
+        clientwin_set_name(cwin, title);
     }
+
+    if (list)
+        XFreeStringList(list);
+
+    if (vmnames)
+        XFreeStringList(vmnames);
 }
 
 
